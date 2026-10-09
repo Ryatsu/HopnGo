@@ -1,0 +1,29 @@
+@startuml
+
+left to right direction
+
+actor Passenger
+actor Driver
+actor "System Administrator" as Admin
+
+rectangle "Hop'nGo" {
+
+    Passenger --> (Register / Login)
+    Passenger --> (Book Ride)
+    Passenger --> (View Ride Status)
+    Passenger --> (Cancel Ride)
+    Passenger --> (Make Payment)
+
+    Driver --> (Login)
+    Driver --> (View Ride Requests)
+    Driver --> (Accept Ride)
+    Driver --> (Reject Ride)
+    Driver --> (Start Trip)
+    Driver --> (End Trip)
+
+    Admin --> (Manage Users)
+    Admin --> (Manage Rides)
+    Admin --> (Manage Payments)
+}
+
+@enduml
