@@ -30,27 +30,27 @@ public class PaymentService {
         RideEntity ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
-        if (!"COMPLETED".equals(ride.getStatus())) {
-            throw new RuntimeException("Ride must be completed before payment");
+        if (!RideEntity.COMPLETED.equals(ride.getStatus())) {
+            throw new IllegalStateException(
+                    "Ride must be completed before payment"
+            );
         }
 
-        if (ride.getFare() == null || ride.getFare().signum() <= 0) {
-            throw new RuntimeException("Invalid ride fare");
+        if (ride.getFare() == null ||
+                ride.getFare().signum() <= 0) {
+            throw new IllegalArgumentException("Invalid ride fare");
         }
 
         if (ride.getPayment() != null) {
-            throw new RuntimeException("Payment already exists for this ride");
+            throw new IllegalStateException(
+                    "Payment already exists for this ride"
+            );
         }
 
-        if (method == null || method.isBlank()) {
-            throw new RuntimeException("Payment method is required");
-        }
-
-        // PENDING means payment has not yet been confirmed
         PaymentEntity payment = new PaymentEntity(
                 ride.getFare(),
                 method,
-                "PENDING"
+                PaymentEntity.PENDING
         );
 
         PaymentEntity savedPayment = paymentRepository.save(payment);
@@ -59,5 +59,29 @@ public class PaymentService {
         rideRepository.save(ride);
 
         return savedPayment;
+    }
+
+    // Confirm a pending payment
+    public PaymentEntity confirmPayment(Long paymentId) {
+
+        PaymentEntity payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Payment not found"));
+
+        payment.markAsPaid();
+
+        return paymentRepository.save(payment);
+    }
+
+    // Refund a paid payment
+    public PaymentEntity refundPayment(Long paymentId) {
+
+        PaymentEntity payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Payment not found"));
+
+        payment.markAsRefunded();
+
+        return paymentRepository.save(payment);
     }
 }

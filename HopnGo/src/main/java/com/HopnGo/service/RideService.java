@@ -59,17 +59,14 @@ public class RideService {
         DriverEntity driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
 
-        if (!driver.isAvailable()) {
-            throw new RuntimeException("Driver is not available");
+        if (!RideEntity.REQUESTED.equals(ride.getStatus())) {
+            throw new IllegalStateException("Ride is not awaiting a driver");
         }
 
-        if (!"REQUESTED".equals(ride.getStatus())) {
-            throw new RuntimeException("Ride is not awaiting a driver");
-        }
+        driver.acceptRide();
 
         ride.setDriver(driver);
-        driver.setAvailable(false);
-        ride.updateStatus("ACCEPTED");
+        ride.updateStatus(RideEntity.ACCEPTED);
 
         driverRepository.save(driver);
 
@@ -82,13 +79,8 @@ public class RideService {
         RideEntity ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
-        if ("IN_PROGRESS".equals(ride.getStatus())
-                || "COMPLETED".equals(ride.getStatus())) {
-            throw new RuntimeException("This ride cannot be cancelled");
-        }
-
         if (ride.getDriver() != null) {
-            ride.getDriver().setAvailable(true);
+            ride.getDriver().releaseFromRide();
             driverRepository.save(ride.getDriver());
         }
 
@@ -101,12 +93,8 @@ public class RideService {
     public RideEntity startTrip(Long rideId) {
 
         RideEntity ride = rideRepository.findById(rideId)
-                .orElseThrow(() -> new RuntimeException("Ride not found"));
-
-        if (!"ACCEPTED".equals(ride.getStatus())) {
-            throw new RuntimeException("Ride must be accepted before starting");
-        }
-
+            .orElseThrow(() -> new RuntimeException("Ride not found"));
+        
         ride.startTrip();
 
         return rideRepository.save(ride);
@@ -118,19 +106,15 @@ public class RideService {
         RideEntity ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
 
-        if (!"IN_PROGRESS".equals(ride.getStatus())) {
-            throw new RuntimeException("Ride is not currently in progress");
-        }
-
-        if (fare == null || fare.signum() < 0) {
-            throw new RuntimeException("Invalid ride fare");
+        if (fare == null || fare.signum() <= 0) {
+            throw new IllegalArgumentException("Invalid ride fare");
         }
 
         ride.setFare(fare);
         ride.endTrip();
 
         if (ride.getDriver() != null) {
-            ride.getDriver().setAvailable(true);
+            ride.getDriver().completeRide();
             driverRepository.save(ride.getDriver());
         }
 

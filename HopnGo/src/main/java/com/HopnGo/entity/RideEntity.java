@@ -1,13 +1,22 @@
+
 package com.HopnGo.entity;
 
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "rides")
 public class RideEntity {
+
+    // Ride statuses
+    public static final String REQUESTED = "REQUESTED";
+    public static final String ACCEPTED = "ACCEPTED";
+    public static final String CANCELLED = "CANCELLED";
+    public static final String IN_PROGRESS = "IN_PROGRESS";
+    public static final String COMPLETED = "COMPLETED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,19 +56,29 @@ public class RideEntity {
     @JoinColumn(name = "payment_id", unique = true)
     private PaymentEntity payment;
 
+    // Required by JPA
     protected RideEntity() {
     }
 
+    // Constructor
     public RideEntity(
             PassengerEntity passenger,
             LocationEntity pickupLocation,
             LocationEntity destinationLocation) {
 
-        this.passenger = passenger;
-        this.pickupLocation = pickupLocation;
-        this.destinationLocation = destinationLocation;
+        this.passenger = Objects.requireNonNull(
+            passenger, "Passenger cannot be null"
+        );
 
-        this.status = "REQUESTED";
+        this.pickupLocation = Objects.requireNonNull(
+            pickupLocation, "Pickup location cannot be null"
+        );
+
+        this.destinationLocation = Objects.requireNonNull(
+            destinationLocation, "Destination location cannot be null"
+        );
+
+        this.status = REQUESTED;
         this.bookingTime = LocalDateTime.now();
     }
 
@@ -78,7 +97,7 @@ public class RideEntity {
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        updateStatus(status);
     }
 
     public BigDecimal getFare() {
@@ -86,6 +105,12 @@ public class RideEntity {
     }
 
     public void setFare(BigDecimal fare) {
+        if (fare != null && fare.signum() < 0) {
+            throw new IllegalArgumentException(
+                "Fare cannot be negative"
+            );
+        }
+
         this.fare = fare;
     }
 
@@ -118,7 +143,9 @@ public class RideEntity {
     }
 
     public void setPassenger(PassengerEntity passenger) {
-        this.passenger = passenger;
+        this.passenger = Objects.requireNonNull(
+            passenger, "Passenger cannot be null"
+        );
     }
 
     public DriverEntity getDriver() {
@@ -134,7 +161,9 @@ public class RideEntity {
     }
 
     public void setPickupLocation(LocationEntity pickupLocation) {
-        this.pickupLocation = pickupLocation;
+        this.pickupLocation = Objects.requireNonNull(
+            pickupLocation, "Pickup location cannot be null"
+        );
     }
 
     public LocationEntity getDestinationLocation() {
@@ -142,7 +171,9 @@ public class RideEntity {
     }
 
     public void setDestinationLocation(LocationEntity destinationLocation) {
-        this.destinationLocation = destinationLocation;
+        this.destinationLocation = Objects.requireNonNull(
+            destinationLocation, "Destination location cannot be null"
+        );
     }
 
     public PaymentEntity getPayment() {
@@ -156,20 +187,59 @@ public class RideEntity {
     // Ride operations
 
     public void cancelRide() {
-        this.status = "CANCELLED";
+
+        if (!REQUESTED.equals(status) && !ACCEPTED.equals(status)) {
+            throw new IllegalStateException(
+                "Only requested or accepted rides can be cancelled"
+            );
+        }
+
+        this.status = CANCELLED;
     }
 
     public void startTrip() {
-        this.status = "IN_PROGRESS";
+
+        if (!ACCEPTED.equals(status)) {
+            throw new IllegalStateException(
+                "Ride must be accepted before starting"
+            );
+        }
+
+        this.status = IN_PROGRESS;
         this.startTime = LocalDateTime.now();
     }
 
     public void endTrip() {
-        this.status = "COMPLETED";
+
+        if (!IN_PROGRESS.equals(status)) {
+            throw new IllegalStateException(
+                "Ride must be in progress before completing"
+            );
+        }
+
+        this.status = COMPLETED;
         this.endTime = LocalDateTime.now();
     }
 
+    // Controls valid status transitions
     public void updateStatus(String status) {
-        this.status = status;
+
+        if (status == null) {
+            throw new IllegalArgumentException(
+                "Ride status cannot be null"
+            );
+        }
+
+        if (REQUESTED.equals(this.status)
+                && ACCEPTED.equals(status)) {
+
+            this.status = status;
+
+        } else {
+            throw new IllegalStateException(
+                "Invalid ride status transition: "
+                + this.status + " to " + status
+            );
+        }
     }
 }

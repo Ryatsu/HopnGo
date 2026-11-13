@@ -1,4 +1,3 @@
-
 package com.HopnGo.entity;
 
 import jakarta.persistence.*;

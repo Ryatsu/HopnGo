@@ -1,4 +1,3 @@
-
 package com.HopnGo.entity;
 
 import jakarta.persistence.*;
@@ -101,5 +100,15 @@ public class DriverEntity extends UserEntity {
     @Override
     public String getRole() {
         return "DRIVER";
+    }
+
+    public void releaseFromRide() {
+        if (available) {
+            throw new IllegalStateException(
+                "Driver is already available"
+            );
+        }
+
+        this.available = true;
     }
 }
