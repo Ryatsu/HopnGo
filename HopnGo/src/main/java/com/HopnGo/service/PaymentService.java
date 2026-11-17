@@ -1,10 +1,12 @@
-
 package com.HopnGo.service;
 
 import com.HopnGo.entity.PaymentEntity;
 import com.HopnGo.entity.RideEntity;
 import com.HopnGo.repository.PaymentRepository;
 import com.HopnGo.repository.RideRepository;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,5 +85,22 @@ public class PaymentService {
         payment.markAsRefunded();
 
         return paymentRepository.save(payment);
+    }
+
+    // View all payment records
+    @Transactional(readOnly = true)
+    public java.util.List<PaymentEntity> getAllPayments() {
+        return paymentRepository.findAll();
+    }
+
+    // Get payment history for a specific passenger
+    @Transactional(readOnly = true)
+    public List<PaymentEntity> getPaymentsByPassenger(Long passengerId) {
+
+        return rideRepository.findByPassenger_UserId(passengerId)
+                .stream()
+                .map(RideEntity::getPayment)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

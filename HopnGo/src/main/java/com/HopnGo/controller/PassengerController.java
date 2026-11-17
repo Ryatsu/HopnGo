@@ -39,4 +39,13 @@ public class PassengerController {
     public List<PassengerEntity> getAllPassengers() {
         return passengerService.getAllPassengers();
     }
+
+    // Update passenger profile
+    @PutMapping("/{passengerId}")
+    public PassengerEntity updatePassenger(
+            @PathVariable Long passengerId,
+            @RequestBody PassengerEntity passenger) {
+
+        return passengerService.updatePassenger(passengerId, passenger);
+    }
 }

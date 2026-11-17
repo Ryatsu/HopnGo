@@ -43,4 +43,16 @@ public class DriverService {
     public List<DriverEntity> getAvailableDrivers() {
         return driverRepository.findByAvailableTrue();
     }
+
+    // Update driver profile
+    public DriverEntity updateDriver(Long driverId, DriverEntity updatedDriver) {
+
+        DriverEntity driver = getDriver(driverId);
+
+        driver.setName(updatedDriver.getName());
+        driver.setPhone(updatedDriver.getPhone());
+        driver.setEmail(updatedDriver.getEmail());
+
+        return driverRepository.save(driver);
+    }
 }

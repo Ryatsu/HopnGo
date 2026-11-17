@@ -1,4 +1,3 @@
-
 package com.HopnGo.controller;
 
 import com.HopnGo.entity.RideEntity;
@@ -70,12 +69,10 @@ public class RideController {
         return rideService.getAllRides();
     }
 
-    // Get passenger rides
-    @GetMapping("/passenger/{passengerId}")
-    public List<RideEntity> getPassengerRides(
-            @PathVariable Long passengerId) {
-
-        return rideService.getPassengerRides(passengerId);
+    // Get pending ride requests
+    @GetMapping("/requests")
+    public List<RideEntity> getPendingRideRequests() {
+        return rideService.getPendingRideRequests();
     }
 
     // Get driver rides

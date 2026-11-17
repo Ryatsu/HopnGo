@@ -17,6 +17,14 @@ public class RideService {
     private final PassengerRepository passengerRepository;
     private final DriverRepository driverRepository;
     private final LocationRepository locationRepository;
+    private RideEntity saveAndFetch(RideEntity ride) {
+
+        rideRepository.save(ride);
+
+        return rideRepository.findById(ride.getRideId())
+                .orElseThrow(() -> new RuntimeException("Ride not found"));
+    }
+
 
     public RideService(
             RideRepository rideRepository,
@@ -47,7 +55,7 @@ public class RideService {
 
         RideEntity ride = new RideEntity(passenger, pickup, destination);
 
-        return rideRepository.save(ride);
+        return saveAndFetch(ride);
     }
 
     // 2. Assign a driver
@@ -70,7 +78,7 @@ public class RideService {
 
         driverRepository.save(driver);
 
-        return rideRepository.save(ride);
+        return saveAndFetch(ride);
     }
 
     // 3. Cancel a ride
@@ -86,7 +94,7 @@ public class RideService {
 
         ride.cancelRide();
 
-        return rideRepository.save(ride);
+        return saveAndFetch(ride);
     }
 
     // 4. Start a trip
@@ -97,7 +105,7 @@ public class RideService {
         
         ride.startTrip();
 
-        return rideRepository.save(ride);
+        return saveAndFetch(ride);
     }
 
     // 5. Complete a trip
@@ -118,7 +126,7 @@ public class RideService {
             driverRepository.save(ride.getDriver());
         }
 
-        return rideRepository.save(ride);
+        return saveAndFetch(ride);
     }
 
     // 6. View all rides
@@ -127,10 +135,10 @@ public class RideService {
         return rideRepository.findAll();
     }
 
-    // 7. View rides by passenger
+    // 7. View pending ride requests
     @Transactional(readOnly = true)
-    public List<RideEntity> getPassengerRides(Long passengerId) {
-        return rideRepository.findByPassenger_UserId(passengerId);
+    public List<RideEntity> getPendingRideRequests() {
+        return rideRepository.findByStatus(RideEntity.REQUESTED);
     }
 
     // 8. View rides by driver

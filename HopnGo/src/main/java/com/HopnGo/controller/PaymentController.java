@@ -1,8 +1,8 @@
-
 package com.HopnGo.controller;
 
 import com.HopnGo.entity.PaymentEntity;
 import com.HopnGo.service.PaymentService;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -40,5 +40,19 @@ public class PaymentController {
             @PathVariable Long paymentId) {
 
         return paymentService.refundPayment(paymentId);
+    }
+
+    // Get all payments
+    @GetMapping
+    public List<PaymentEntity> getAllPayments() {
+        return paymentService.getAllPayments();
+    }
+
+    // Get payment history for a passenger
+    @GetMapping("/passenger/{passengerId}")
+    public List<PaymentEntity> getPaymentsByPassenger(
+            @PathVariable Long passengerId) {
+
+        return paymentService.getPaymentsByPassenger(passengerId);
     }
 }

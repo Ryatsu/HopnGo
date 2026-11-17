@@ -37,4 +37,18 @@ public class PassengerService {
     public List<PassengerEntity> getAllPassengers() {
         return passengerRepository.findAll();
     }
+
+    // Update passenger profile
+    public PassengerEntity updatePassenger(
+            Long passengerId,
+            PassengerEntity updatedPassenger) {
+
+        PassengerEntity passenger = getPassenger(passengerId);
+
+        passenger.setName(updatedPassenger.getName());
+        passenger.setPhone(updatedPassenger.getPhone());
+        passenger.setEmail(updatedPassenger.getEmail());
+
+        return passengerRepository.save(passenger);
+    }
 }

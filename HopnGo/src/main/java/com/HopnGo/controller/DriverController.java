@@ -45,4 +45,13 @@ public class DriverController {
     public List<DriverEntity> getAvailableDrivers() {
         return driverService.getAvailableDrivers();
     }
+
+    // Update driver profile
+    @PutMapping("/{driverId}")
+    public DriverEntity updateDriver(
+            @PathVariable Long driverId,
+            @RequestBody DriverEntity updatedDriver) {
+
+        return driverService.updateDriver(driverId, updatedDriver);
+    }
 }
